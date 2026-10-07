@@ -1,0 +1,19 @@
+# Inventario Lab 1 — SIN contraseñas (R2).
+# Claves: LAB_PASS_MT_LAB y LAB_PASS_CISCO_LAB (variables de entorno) o getpass.
+
+estudiante:
+  numero: 0            # <-- su número de lista N (1-254)
+  nombre: "Alejandro Cordero"
+
+equipos:
+  - nombre: mt-lab
+    host: 10.60.30.202
+    device_type: mikrotik_routeros
+    usuario: lab-ssh
+    rol: escritura
+
+  - nombre: cisco-lab          # extra multivendor (solo lectura)
+    host: 10.60.30.203
+    device_type: cisco_ios
+    usuario: lab-ssh
+    rol: lectura

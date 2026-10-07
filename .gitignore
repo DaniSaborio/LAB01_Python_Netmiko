@@ -1,7 +1,10 @@
 
-.venv/
-venv/
-
 project-files/
 
-
+env/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+*.secret
