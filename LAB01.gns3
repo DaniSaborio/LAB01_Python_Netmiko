@@ -6,7 +6,7 @@
     "grid_size": 75,
     "name": "LAB01",
     "project_id": "ef01866b-d2c9-4d99-adac-cdc41b34f3c2",
-    "revision": 9,
+    "revision": 10,
     "scene_height": 1000,
     "scene_width": 2000,
     "show_grid": false,
@@ -561,6 +561,6 @@
     },
     "type": "topology",
     "variables": null,
-    "version": "2.2.61",
+    "version": "3.1.0a6",
     "zoom": 100
 }
