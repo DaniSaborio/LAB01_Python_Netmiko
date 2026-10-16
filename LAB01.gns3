@@ -2,8 +2,10 @@
     "auto_close": true,
     "auto_open": false,
     "auto_start": false,
+    "created_by": null,
     "drawing_grid_size": 25,
     "grid_size": 75,
+    "marker_definitions": {},
     "name": "LAB01",
     "project_id": "ef01866b-d2c9-4d99-adac-cdc41b34f3c2",
     "revision": 10,
@@ -26,6 +28,7 @@
                     "type": 1,
                     "width": 2
                 },
+                "markers": {},
                 "nodes": [
                     {
                         "adapter_number": 0,
@@ -52,6 +55,7 @@
                         "port_number": 0
                     }
                 ],
+                "show_filters_icon": true,
                 "suspend": false
             },
             {
@@ -62,6 +66,7 @@
                     "type": 1,
                     "width": 2
                 },
+                "markers": {},
                 "nodes": [
                     {
                         "adapter_number": 0,
@@ -88,6 +93,7 @@
                         "port_number": 1
                     }
                 ],
+                "show_filters_icon": true,
                 "suspend": false
             },
             {
@@ -98,6 +104,7 @@
                     "type": 1,
                     "width": 2
                 },
+                "markers": {},
                 "nodes": [
                     {
                         "adapter_number": 0,
@@ -124,6 +131,7 @@
                         "port_number": 0
                     }
                 ],
+                "show_filters_icon": true,
                 "suspend": false
             },
             {
@@ -134,6 +142,7 @@
                     "type": 1,
                     "width": 2
                 },
+                "markers": {},
                 "nodes": [
                     {
                         "adapter_number": 0,
@@ -160,6 +169,7 @@
                         "port_number": 0
                     }
                 ],
+                "show_filters_icon": true,
                 "suspend": false
             },
             {
@@ -170,6 +180,7 @@
                     "type": 1,
                     "width": 2
                 },
+                "markers": {},
                 "nodes": [
                     {
                         "adapter_number": 0,
@@ -196,11 +207,88 @@
                         "port_number": 2
                     }
                 ],
+                "show_filters_icon": true,
                 "suspend": false
             }
         ],
         "nodes": [
             {
+                "aux": null,
+                "aux_type": null,
+                "compute_id": "local",
+                "console": 5003,
+                "console_auto_start": false,
+                "console_type": "telnet",
+                "custom_adapters": [],
+                "default_password": null,
+                "default_username": null,
+                "first_port_name": null,
+                "height": 59,
+                "label": {
+                    "rotation": 0,
+                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                    "text": "PC2",
+                    "x": 16,
+                    "y": -25
+                },
+                "locked": false,
+                "name": "PC2",
+                "netmiko_device_type": null,
+                "node_id": "ded607f0-3253-4970-b530-e7e77cf45f5b",
+                "node_type": "vpcs",
+                "port_name_format": "Ethernet{0}",
+                "port_segment_size": 0,
+                "properties": {
+                    "usage": null
+                },
+                "symbol": ":/symbols/vpcs_guest.svg",
+                "tags": [],
+                "template_id": "19021f99-e36f-394d-b4a1-8aaa902ab9cc",
+                "width": 65,
+                "x": -285,
+                "y": 26,
+                "z": 1
+            },
+            {
+                "aux": null,
+                "aux_type": null,
+                "compute_id": "local",
+                "console": 5013,
+                "console_auto_start": false,
+                "console_type": "telnet",
+                "custom_adapters": [],
+                "default_password": null,
+                "default_username": null,
+                "first_port_name": null,
+                "height": 59,
+                "label": {
+                    "rotation": 0,
+                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                    "text": "PC1",
+                    "x": 16,
+                    "y": -25
+                },
+                "locked": false,
+                "name": "PC1",
+                "netmiko_device_type": null,
+                "node_id": "524aa13d-d46a-4bd2-94ed-49a9689f03df",
+                "node_type": "vpcs",
+                "port_name_format": "Ethernet{0}",
+                "port_segment_size": 0,
+                "properties": {
+                    "usage": null
+                },
+                "symbol": ":/symbols/vpcs_guest.svg",
+                "tags": [],
+                "template_id": "19021f99-e36f-394d-b4a1-8aaa902ab9cc",
+                "width": 65,
+                "x": -462,
+                "y": 18,
+                "z": 1
+            },
+            {
+                "aux": null,
+                "aux_type": "none",
                 "compute_id": "local",
                 "console": 5004,
                 "console_auto_start": false,
@@ -211,6 +299,8 @@
                         "port_name": "sfp1"
                     }
                 ],
+                "default_password": null,
+                "default_username": null,
                 "first_port_name": "",
                 "height": 45,
                 "label": {
@@ -222,6 +312,7 @@
                 },
                 "locked": false,
                 "name": "MikroTikRB2011UiAS7.8-1",
+                "netmiko_device_type": null,
                 "node_id": "217263a2-610b-4b78-a66a-eef2cb2139cb",
                 "node_type": "qemu",
                 "port_name_format": "ether{port1}",
@@ -238,15 +329,19 @@
                     "cpus": 1,
                     "create_config_disk": false,
                     "hda_disk_image": "chr-7.8.img",
-                    "hda_disk_image_md5sum": "08fc9baf18d920bc65c974cafa3719be",
+                    "hda_disk_image_backing_file": null,
+                    "hda_disk_image_md5sum": null,
                     "hda_disk_interface": "virtio",
                     "hdb_disk_image": "",
+                    "hdb_disk_image_backing_file": null,
                     "hdb_disk_image_md5sum": null,
                     "hdb_disk_interface": "none",
                     "hdc_disk_image": "",
+                    "hdc_disk_image_backing_file": null,
                     "hdc_disk_image_md5sum": null,
                     "hdc_disk_interface": "none",
                     "hdd_disk_image": "",
+                    "hdd_disk_image_backing_file": null,
                     "hdd_disk_image_md5sum": null,
                     "hdd_disk_interface": "none",
                     "initrd": "",
@@ -257,6 +352,7 @@
                     "legacy_networking": false,
                     "linked_clone": true,
                     "mac_address": "0c:72:63:a2:00:00",
+                    "maxcpus": 1,
                     "on_close": "shutdown_signal",
                     "options": "-nographic",
                     "platform": "x86_64",
@@ -269,6 +365,7 @@
                     "usage": "If you'd like a different sized main disk, resize the image before booting the VM for the first time.\n\nOn first boot, RouterOS is actually being installed, formatting the whole main virtual disk, before finally rebooting. That whole process may take a minute or so.\n\nThe console will become available after the installation is complete. Most Telnet/SSH clients (certainly SuperPutty) will keep retrying to connect, thus letting you know when installation is done.\n\nFrom that point on, everything about RouterOS is also true about Cloud Hosted Router, including the default credentials: Username \"admin\" and an empty password.\n\nThe primary differences between RouterOS and CHR are in support for virtual devices (this appliance comes with them being selected), and in the different license model, for which you can read more about at http://wiki.mikrotik.com/wiki/Manual:CHR."
                 },
                 "symbol": ":/symbols/classic/router.svg",
+                "tags": [],
                 "template_id": "ebd753dd-b0b2-46c4-8145-d667c125efc1",
                 "width": 66,
                 "x": -288,
@@ -276,11 +373,87 @@
                 "z": 1
             },
             {
+                "aux": null,
+                "aux_type": "none",
+                "compute_id": "local",
+                "console": 5016,
+                "console_auto_start": false,
+                "console_type": "telnet",
+                "custom_adapters": [],
+                "default_password": null,
+                "default_username": null,
+                "first_port_name": null,
+                "height": 45,
+                "label": {
+                    "rotation": 0,
+                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                    "text": "R1",
+                    "x": 21,
+                    "y": -25
+                },
+                "locked": false,
+                "name": "R1",
+                "netmiko_device_type": null,
+                "node_id": "573cc0cc-d696-4978-afcc-07fb7dc3e229",
+                "node_type": "dynamips",
+                "port_name_format": "Ethernet{0}",
+                "port_segment_size": 0,
+                "properties": {
+                    "auto_delete_disks": false,
+                    "aux": null,
+                    "chassis": null,
+                    "clock_divisor": 8,
+                    "disk0": 0,
+                    "disk1": 0,
+                    "dynamips_id": 1,
+                    "exec_area": 64,
+                    "idlemax": 500,
+                    "idlepc": "0x60c09aa0",
+                    "idlesleep": 30,
+                    "image": "c3725-adventerprisek9-mz.124-15.T14.image",
+                    "image_md5sum": "64f8c427ed48fd21bd02cf1ff254c4eb",
+                    "iomem": 5,
+                    "mac_addr": "c201.789c.0000",
+                    "midplane": null,
+                    "mmap": true,
+                    "npe": null,
+                    "nvram": 256,
+                    "platform": "c3725",
+                    "power_supplies": null,
+                    "ram": 128,
+                    "sensors": null,
+                    "slot0": "GT96100-FE",
+                    "slot1": null,
+                    "slot2": null,
+                    "slot3": null,
+                    "slot4": null,
+                    "slot5": null,
+                    "slot6": null,
+                    "sparsemem": true,
+                    "system_id": "FTX0945W0MY",
+                    "usage": "",
+                    "wic0": null,
+                    "wic1": null,
+                    "wic2": null
+                },
+                "symbol": ":/symbols/classic/router.svg",
+                "tags": [],
+                "template_id": "99d0c1d8-3ac1-4f3f-b828-fff8bfe34f8e",
+                "width": 66,
+                "x": -463,
+                "y": -119,
+                "z": 1
+            },
+            {
+                "aux": null,
+                "aux_type": null,
                 "compute_id": "local",
                 "console": null,
                 "console_auto_start": false,
                 "console_type": "none",
                 "custom_adapters": [],
+                "default_password": null,
+                "default_username": null,
                 "first_port_name": null,
                 "height": 71,
                 "label": {
@@ -292,6 +465,7 @@
                 },
                 "locked": false,
                 "name": "Cloud1",
+                "netmiko_device_type": null,
                 "node_id": "56eeb9df-d3da-4634-802b-afb5768b0a42",
                 "node_type": "cloud",
                 "port_name_format": "Ethernet{0}",
@@ -299,28 +473,100 @@
                 "properties": {
                     "interfaces": [
                         {
+                            "flags": [
+                                "up",
+                                "broadcast",
+                                "multicast"
+                            ],
+                            "ip_addresses": [],
+                            "mtu": 1500,
                             "name": "enp3s0",
                             "special": false,
+                            "speed": 0,
+                            "status": "down",
                             "type": "ethernet"
                         },
                         {
+                            "flags": [
+                                "up",
+                                "loopback",
+                                "running"
+                            ],
+                            "ip_addresses": [
+                                {
+                                    "address": "127.0.0.1",
+                                    "family": "ipv4",
+                                    "netmask": "255.0.0.0"
+                                },
+                                {
+                                    "address": "::1",
+                                    "family": "ipv6",
+                                    "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+                                }
+                            ],
+                            "mtu": 65536,
                             "name": "lo",
                             "special": true,
+                            "speed": 0,
+                            "status": "up",
                             "type": "ethernet"
                         },
                         {
+                            "flags": [
+                                "up",
+                                "pointopoint",
+                                "running",
+                                "noarp",
+                                "multicast"
+                            ],
+                            "ip_addresses": [
+                                {
+                                    "address": "100.70.211.54",
+                                    "family": "ipv4",
+                                    "netmask": "255.255.255.255"
+                                },
+                                {
+                                    "address": "fd7a:115c:a1e0::de3b:d337",
+                                    "family": "ipv6",
+                                    "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+                                },
+                                {
+                                    "address": "fe80::bd7a:7972:f1ee:b817%tailscale0",
+                                    "family": "ipv6",
+                                    "netmask": "ffff:ffff:ffff:ffff::"
+                                }
+                            ],
+                            "mtu": 1280,
                             "name": "tailscale0",
                             "special": false,
+                            "speed": 0,
+                            "status": "up",
                             "type": "ethernet"
                         },
                         {
-                            "name": "tap0",
-                            "special": false,
-                            "type": "tap"
-                        },
-                        {
+                            "flags": [
+                                "up",
+                                "broadcast",
+                                "running",
+                                "multicast"
+                            ],
+                            "ip_addresses": [
+                                {
+                                    "address": "192.168.100.10",
+                                    "family": "ipv4",
+                                    "netmask": "255.255.255.0"
+                                },
+                                {
+                                    "address": "fe80::b0ef:23c0:6817:8801%wlp4s0",
+                                    "family": "ipv6",
+                                    "netmask": "ffff:ffff:ffff:ffff::"
+                                }
+                            ],
+                            "mtu": 1500,
                             "name": "wlp4s0",
                             "special": false,
+                            "speed": 0,
+                            "status": "up",
                             "type": "ethernet"
                         }
                     ],
@@ -353,9 +599,11 @@
                     "remote_console_host": "",
                     "remote_console_http_path": "/",
                     "remote_console_port": 23,
-                    "remote_console_type": "none"
+                    "remote_console_type": "none",
+                    "usage": ""
                 },
                 "symbol": ":/symbols/cloud.svg",
+                "tags": [],
                 "template_id": "39e257dc-8412-3174-b6b3-0ee3ed6a43e9",
                 "width": 159,
                 "x": -888,
@@ -363,11 +611,15 @@
                 "z": 1
             },
             {
+                "aux": null,
+                "aux_type": null,
                 "compute_id": "local",
-                "console": 5007,
+                "console": null,
                 "console_auto_start": false,
                 "console_type": "none",
                 "custom_adapters": [],
+                "default_password": null,
+                "default_username": null,
                 "first_port_name": null,
                 "height": 32,
                 "label": {
@@ -379,6 +631,7 @@
                 },
                 "locked": false,
                 "name": "Switch1",
+                "netmiko_device_type": null,
                 "node_id": "1f28e4d6-eed6-4b0e-a41f-deb55d780f6d",
                 "node_type": "ethernet_switch",
                 "port_name_format": "Ethernet{0}",
@@ -386,175 +639,70 @@
                 "properties": {
                     "ports_mapping": [
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet0",
                             "port_number": 0,
                             "type": "access",
                             "vlan": 1
                         },
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet1",
                             "port_number": 1,
                             "type": "access",
                             "vlan": 1
                         },
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet2",
                             "port_number": 2,
                             "type": "access",
                             "vlan": 1
                         },
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet3",
                             "port_number": 3,
                             "type": "access",
                             "vlan": 1
                         },
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet4",
                             "port_number": 4,
                             "type": "access",
                             "vlan": 1
                         },
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet5",
                             "port_number": 5,
                             "type": "access",
                             "vlan": 1
                         },
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet6",
                             "port_number": 6,
                             "type": "access",
                             "vlan": 1
                         },
                         {
+                            "ethertype": "0x8100",
                             "name": "Ethernet7",
                             "port_number": 7,
                             "type": "access",
                             "vlan": 1
                         }
-                    ]
+                    ],
+                    "usage": ""
                 },
                 "symbol": ":/symbols/ethernet_switch.svg",
+                "tags": [],
                 "template_id": "1966b864-93e7-32d5-965f-001384eec461",
                 "width": 72,
                 "x": -622,
                 "y": -257,
-                "z": 1
-            },
-            {
-                "compute_id": "local",
-                "console": 5008,
-                "console_auto_start": false,
-                "console_type": "telnet",
-                "custom_adapters": [],
-                "first_port_name": null,
-                "height": 59,
-                "label": {
-                    "rotation": 0,
-                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                    "text": "PC2",
-                    "x": 16,
-                    "y": -25
-                },
-                "locked": false,
-                "name": "PC2",
-                "node_id": "ded607f0-3253-4970-b530-e7e77cf45f5b",
-                "node_type": "vpcs",
-                "port_name_format": "Ethernet{0}",
-                "port_segment_size": 0,
-                "properties": {},
-                "symbol": ":/symbols/vpcs_guest.svg",
-                "template_id": "19021f99-e36f-394d-b4a1-8aaa902ab9cc",
-                "width": 65,
-                "x": -285,
-                "y": 26,
-                "z": 1
-            },
-            {
-                "compute_id": "local",
-                "console": 5013,
-                "console_auto_start": false,
-                "console_type": "telnet",
-                "custom_adapters": [],
-                "first_port_name": null,
-                "height": 59,
-                "label": {
-                    "rotation": 0,
-                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                    "text": "PC1",
-                    "x": 16,
-                    "y": -25
-                },
-                "locked": false,
-                "name": "PC1",
-                "node_id": "524aa13d-d46a-4bd2-94ed-49a9689f03df",
-                "node_type": "vpcs",
-                "port_name_format": "Ethernet{0}",
-                "port_segment_size": 0,
-                "properties": {},
-                "symbol": ":/symbols/vpcs_guest.svg",
-                "template_id": "19021f99-e36f-394d-b4a1-8aaa902ab9cc",
-                "width": 65,
-                "x": -462,
-                "y": 18,
-                "z": 1
-            },
-            {
-                "compute_id": "local",
-                "console": 5016,
-                "console_auto_start": false,
-                "console_type": "telnet",
-                "custom_adapters": [],
-                "first_port_name": null,
-                "height": 45,
-                "label": {
-                    "rotation": 0,
-                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                    "text": "R1",
-                    "x": 21,
-                    "y": -25
-                },
-                "locked": false,
-                "name": "R1",
-                "node_id": "573cc0cc-d696-4978-afcc-07fb7dc3e229",
-                "node_type": "dynamips",
-                "port_name_format": "Ethernet{0}",
-                "port_segment_size": 0,
-                "properties": {
-                    "auto_delete_disks": false,
-                    "aux": null,
-                    "clock_divisor": 8,
-                    "disk0": 0,
-                    "disk1": 0,
-                    "dynamips_id": 1,
-                    "exec_area": 64,
-                    "idlemax": 500,
-                    "idlepc": "0x60c09aa0",
-                    "idlesleep": 30,
-                    "image": "c3725-adventerprisek9-mz.124-15.T14.image",
-                    "image_md5sum": "64f8c427ed48fd21bd02cf1ff254c4eb",
-                    "iomem": 5,
-                    "mac_addr": "c201.789c.0000",
-                    "mmap": true,
-                    "nvram": 256,
-                    "platform": "c3725",
-                    "ram": 128,
-                    "slot0": "GT96100-FE",
-                    "slot1": null,
-                    "slot2": null,
-                    "sparsemem": true,
-                    "system_id": "FTX0945W0MY",
-                    "usage": "",
-                    "wic0": null,
-                    "wic1": null,
-                    "wic2": null
-                },
-                "symbol": ":/symbols/classic/router.svg",
-                "template_id": "99d0c1d8-3ac1-4f3f-b828-fff8bfe34f8e",
-                "width": 66,
-                "x": -463,
-                "y": -119,
                 "z": 1
             }
         ]
