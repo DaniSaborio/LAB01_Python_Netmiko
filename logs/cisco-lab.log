@@ -9,8 +9,9 @@ cisco-lab#show running-config | include hostname
 hostname cisco-lab
 cisco-lab#
 cisco-lab#
+cisco-lab#
 cisco-lab#show version | include uptime
-cisco-lab uptime is 15 minutes
+cisco-lab uptime is 21 minutes
 cisco-lab#
 cisco-lab#
 cisco-lab#show ip interface brief

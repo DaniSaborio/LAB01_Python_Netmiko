@@ -1,0 +1,16 @@
+
+cisco-lab#
+cisco-lab#terminal width 511
+cisco-lab#terminal length 0
+cisco-lab#
+cisco-lab#
+cisco-lab#
+cisco-lab#ping 172.16.20.1 source FastEthernet0/1 repeat 3
+
+Type escape sequence to abort.
+Sending 3, 100-byte ICMP Echos to 172.16.20.1, timeout is 2 seconds:
+Packet sent with a source address of 172.16.10.1 
+!!!
+Success rate is 100 percent (3/3), round-trip min/avg/max = 32/66/136 ms
+cisco-lab#
+cisco-lab#exit

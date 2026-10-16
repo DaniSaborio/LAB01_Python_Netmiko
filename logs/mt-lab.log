@@ -25,7 +25,8 @@
 Press F1 for help
 
 [9999B
-[9999B
+[9999Boct/16/2026 06:10:46 system,error,critical login failure for user admin via local
+
 
 
 [9999B[lab-ssh@mt-lab] > 
@@ -57,20 +58,20 @@ Press F1 for help
 
 [lab-ssh@mt-lab] > /system resource print
 
-                   uptime: 16m29s
+                   uptime: 26m59s
                   version: 7.8 (stable)
                build-time: Feb/24/2023 09:03:00
          factory-software: 7.1
-              free-memory: 17.4MiB
+              free-memory: 17.1MiB
              total-memory: 96.0MiB
                       cpu: QEMU
                 cpu-count: 1
             cpu-frequency: 3293MHz
-                 cpu-load: 11%
+                 cpu-load: 8%
            free-hdd-space: 71.4MiB
           total-hdd-space: 89.2MiB
-  write-sect-since-reboot: 3136
-         write-sect-total: 3136
+  write-sect-since-reboot: 3688
+         write-sect-total: 3688
         architecture-name: x86_64
                board-name: CHR
                  platform: MikroTik
