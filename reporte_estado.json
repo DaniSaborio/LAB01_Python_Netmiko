@@ -1,0 +1,186 @@
+{
+  "laboratorio": "ITIEL-13 Lab 1 — Inventario, estado y configuración segura",
+  "estudiante": {
+    "nombre": "Daniel Saborio",
+    "numero_lista": 5
+  },
+  "generado": "2026-10-15T23:56:21",
+  "resumen": {
+    "total": 2,
+    "ok": 2,
+    "error": 0
+  },
+  "equipos": [
+    {
+      "nombre": "mt-lab",
+      "host": "10.60.30.202",
+      "device_type": "mikrotik_routeros",
+      "rol": "escritura",
+      "fecha": "2026-10-15T23:56:15",
+      "estado": "ok",
+      "datos": {
+        "hostname": "mt-lab",
+        "sistema": {
+          "uptime": "11m29s",
+          "version": "7.8 (stable)",
+          "board": "CHR",
+          "cpu_load": "8%"
+        },
+        "interfaces": [
+          {
+            "interfaz": "ether1",
+            "ip": "10.60.30.202/24",
+            "red": "10.60.30.0",
+            "deshabilitada": false,
+            "dinamica": false
+          },
+          {
+            "interfaz": "ether2",
+            "ip": "172.16.20.1/24",
+            "red": "172.16.20.0",
+            "deshabilitada": false,
+            "dinamica": false
+          },
+          {
+            "interfaz": "lo-ssh-5",
+            "ip": "10.253.0.5/32",
+            "red": "10.253.0.5",
+            "deshabilitada": false,
+            "dinamica": false
+          }
+        ],
+        "ruta_default": {
+          "destino": "0.0.0.0/0",
+          "gateway": "10.60.30.1",
+          "distancia": "1",
+          "activa": true
+        }
+      },
+      "cambios": {
+        "accion": "asegurar",
+        "interfaz": "lo-ssh-5",
+        "ip": "10.253.0.5/32",
+        "pasos": [
+          [
+            "Bridge",
+            "lo-ssh-5",
+            "sin cambios"
+          ],
+          [
+            "Dirección IP",
+            "10.253.0.5/32",
+            "sin cambios"
+          ]
+        ],
+        "hubo_cambios": false,
+        "verificacion": {
+          "bridge_existe": true,
+          "comentario": "Lab1 - Daniel Saborio - lista 5",
+          "ips": [
+            "10.253.0.5/32"
+          ],
+          "ok": true
+        }
+      },
+      "rest": {
+        "datos": {
+          "hostname": "mt-lab",
+          "sistema": {
+            "uptime": "11m30s",
+            "version": "7.8 (stable)"
+          },
+          "interfaces": [
+            {
+              "interfaz": "ether1",
+              "ip": "10.60.30.202/24"
+            },
+            {
+              "interfaz": "ether2",
+              "ip": "172.16.20.1/24"
+            },
+            {
+              "interfaz": "lo-ssh-5",
+              "ip": "10.253.0.5/32"
+            }
+          ],
+          "ruta_default": {
+            "destino": "0.0.0.0/0",
+            "gateway": "10.60.30.1"
+          }
+        },
+        "comparacion": [
+          {
+            "campo": "Hostname",
+            "ssh": "mt-lab",
+            "rest": "mt-lab",
+            "coincide": true
+          },
+          {
+            "campo": "Versión",
+            "ssh": "7.8 (stable)",
+            "rest": "7.8 (stable)",
+            "coincide": true
+          },
+          {
+            "campo": "Interfaces con IP",
+            "ssh": 3,
+            "rest": 3,
+            "coincide": true
+          },
+          {
+            "campo": "Lista de IPs",
+            "ssh": 3,
+            "rest": 3,
+            "coincide": true
+          },
+          {
+            "campo": "Gateway",
+            "ssh": "10.60.30.1",
+            "rest": "10.60.30.1",
+            "coincide": true
+          },
+          {
+            "campo": "Uptime",
+            "ssh": "11m29s",
+            "rest": "11m30s",
+            "coincide": null
+          }
+        ]
+      }
+    },
+    {
+      "nombre": "cisco-lab",
+      "host": "10.60.30.203",
+      "device_type": "cisco_ios",
+      "rol": "lectura",
+      "fecha": "2026-10-15T23:56:17",
+      "estado": "ok",
+      "datos": {
+        "hostname": "cisco-lab",
+        "sistema": {
+          "uptime": "10 minutes"
+        },
+        "interfaces": [
+          {
+            "interfaz": "FastEthernet0/0",
+            "ip": "10.60.30.203",
+            "estado": "up",
+            "protocolo": "up"
+          },
+          {
+            "interfaz": "FastEthernet0/1",
+            "ip": "172.16.10.1",
+            "estado": "up",
+            "protocolo": "up"
+          }
+        ],
+        "ruta_default": {
+          "destino": "0.0.0.0/0",
+          "gateway": "10.60.30.1"
+        }
+      },
+      "cambios": null,
+      "rest": null
+    }
+  ]
+}

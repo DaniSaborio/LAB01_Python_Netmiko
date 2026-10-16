@@ -1,0 +1,155 @@
+
+
+
+
+
+
+
+
+
+  MMM      MMM       KKK                          TTTTTTTTTTT      KKK
+
+  MMMM    MMMM       KKK                          TTTTTTTTTTT      KKK
+
+  MMM MMMM MMM  III  KKK  KKK  RRRRRR     OOOOOO      TTT     III  KKK  KKK
+
+  MMM  MM  MMM  III  KKKKK     RRR  RRR  OOO  OOO     TTT     III  KKKKK
+
+  MMM      MMM  III  KKK KKK   RRRRRR    OOO  OOO     TTT     III  KKK KKK
+
+  MMM      MMM  III  KKK  KKK  RRR  RRR   OOOOOO      TTT     III  KKK  KKK
+
+
+  MikroTik RouterOS 7.8 (c) 1999-2023       https://www.mikrotik.com/
+
+Press F1 for help
+
+[9999B
+[9999Boct/16/2026 05:56:07 system,error,critical login failure for user admin via local
+
+
+
+[9999B[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > 
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /system identity print
+
+  name: mt-lab
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /system resource print
+
+                   uptime: 11m29s
+                  version: 7.8 (stable)
+               build-time: Feb/24/2023 09:03:00
+         factory-software: 7.1
+              free-memory: 15.1MiB
+             total-memory: 96.0MiB
+                      cpu: QEMU
+                cpu-count: 1
+            cpu-frequency: 3293MHz
+                 cpu-load: 8%
+           free-hdd-space: 71.4MiB
+          total-hdd-space: 89.2MiB
+  write-sect-since-reboot: 2720
+         write-sect-total: 2720
+        architecture-name: x86_64
+               board-name: CHR
+                 platform: MikroTik
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /ip address print terse
+
+0 comment=LAB-LOCAL address=10.60.30.202/24 network=10.60.30.0 interface=ether1 actual-interface=ether1
+1 comment=LAB-LOCAL LAN PC2 address=172.16.20.1/24 network=172.16.20.0 interface=ether2 actual-interface=ether2
+2 comment=Lab1 - Daniel Saborio - lista 5 address=10.253.0.5/32 network=10.253.0.5 interface=lo-ssh-5 actual-interface=lo-ssh-5
+
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /ip route print terse where dst-address=0.0.0.0/0
+
+0 As comment=LAB-LOCAL dst-address=0.0.0.0/0 routing-table=main pref-src= gateway=10.60.30.1 immediate-gw=10.60.30.1%ether1 distance=1 scope=30 target-scope=10 suppress-hw-offload=no
+
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /interface bridge print terse where name="lo-ssh-5"
+
+0 R comment=Lab1 - Daniel Saborio - lista 5 name=lo-ssh-5 mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled arp-timeout=auto mac-address=9A:B6:B9:8C:6E:26 protocol-mode=none fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m vlan-filtering=no dhcp-snooping=no
+
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /ip address print terse where interface="lo-ssh-5"
+
+2 comment=Lab1 - Daniel Saborio - lista 5 address=10.253.0.5/32 network=10.253.0.5 interface=lo-ssh-5 actual-interface=lo-ssh-5
+
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /interface bridge print terse where name="lo-ssh-5"
+
+0 R comment=Lab1 - Daniel Saborio - lista 5 name=lo-ssh-5 mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled arp-timeout=auto mac-address=9A:B6:B9:8C:6E:26 protocol-mode=none fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m vlan-filtering=no dhcp-snooping=no
+
+
+
+
+[lab-ssh@mt-lab] > 
+
+
+
+
+[lab-ssh@mt-lab] > /ip address print terse where interface="lo-ssh-5"
+
+2 comment=Lab1 - Daniel Saborio - lista 5 address=10.253.0.5/32 network=10.253.0.5 interface=lo-ssh-5 actual-interface=lo-ssh-5
+
+
+
+
+[lab-ssh@mt-lab] > quit
