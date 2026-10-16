@@ -4,7 +4,7 @@
     "nombre": "Daniel Saborio",
     "numero_lista": 5
   },
-  "generado": "2026-10-15T23:56:21",
+  "generado": "2026-10-16T00:01:21",
   "resumen": {
     "total": 2,
     "ok": 2,
@@ -16,15 +16,15 @@
       "host": "10.60.30.202",
       "device_type": "mikrotik_routeros",
       "rol": "escritura",
-      "fecha": "2026-10-15T23:56:15",
+      "fecha": "2026-10-16T00:01:16",
       "estado": "ok",
       "datos": {
         "hostname": "mt-lab",
         "sistema": {
-          "uptime": "11m29s",
+          "uptime": "16m29s",
           "version": "7.8 (stable)",
           "board": "CHR",
-          "cpu_load": "8%"
+          "cpu_load": "11%"
         },
         "interfaces": [
           {
@@ -86,7 +86,7 @@
         "datos": {
           "hostname": "mt-lab",
           "sistema": {
-            "uptime": "11m30s",
+            "uptime": "16m30s",
             "version": "7.8 (stable)"
           },
           "interfaces": [
@@ -141,8 +141,8 @@
           },
           {
             "campo": "Uptime",
-            "ssh": "11m29s",
-            "rest": "11m30s",
+            "ssh": "16m29s",
+            "rest": "16m30s",
             "coincide": null
           }
         ]
@@ -153,12 +153,12 @@
       "host": "10.60.30.203",
       "device_type": "cisco_ios",
       "rol": "lectura",
-      "fecha": "2026-10-15T23:56:17",
+      "fecha": "2026-10-16T00:01:17",
       "estado": "ok",
       "datos": {
         "hostname": "cisco-lab",
         "sistema": {
-          "uptime": "10 minutes"
+          "uptime": "15 minutes"
         },
         "interfaces": [
           {

@@ -8,15 +8,15 @@ cisco-lab#
 cisco-lab#show running-config | include hostname
 hostname cisco-lab
 cisco-lab#
+cisco-lab#
 cisco-lab#show version | include uptime
-cisco-lab uptime is 10 minutes
+cisco-lab uptime is 15 minutes
 cisco-lab#
 cisco-lab#
 cisco-lab#show ip interface brief
 Interface                  IP-Address      OK? Method Status                Protocol
 FastEthernet0/0            10.60.30.203    YES manual up                    up      
 FastEthernet0/1            172.16.10.1     YES manual up                    up      
-cisco-lab#
 cisco-lab#
 cisco-lab#show ip route 0.0.0.0
 Routing entry for 0.0.0.0/0, supernet
