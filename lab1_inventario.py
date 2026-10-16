@@ -21,6 +21,7 @@ import json
 import os
 import re
 import sys
+
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
@@ -38,6 +39,9 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
+from dotenv import load_dotenv
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Constantes y rutas
 # ─────────────────────────────────────────────────────────────────────────────
@@ -46,6 +50,8 @@ console = Console()
 BASE_DIR = Path(__file__).resolve().parent
 LOGS_DIR = BASE_DIR / "logs"
 REPORTE_JSON = BASE_DIR / "reporte_estado.json"
+
+load_dotenv(BASE_DIR / ".env")
 
 CAMPOS_OBLIGATORIOS = ("nombre", "host", "device_type", "usuario", "rol")
 ROLES_VALIDOS = ("lectura", "escritura")
@@ -79,7 +85,10 @@ RE_ERROR_ROUTEROS = re.compile(
 # ─────────────────────────────────────────────────────────────────────────────
 # Utilidades de parseo (texto -> estructuras)
 # ─────────────────────────────────────────────────────────────────────────────
-RE_KV = re.compile(r'([\w.-]+)=("[^"]*"|\S+)')
+# En 'print terse' los valores NO van entre comillas y pueden tener espacios
+# (ej. comment=Lab1 - Daniel Saborio). Un valor termina donde empieza la
+# siguiente " clave=" (las claves de RouterOS son minúsculas con guiones).
+RE_CLAVE_TERSE = re.compile(r"(?:^|(?<=\s))([a-z][a-z0-9.-]*)=")
 RE_ENCABEZADO_TERSE = re.compile(r"^\s*(\d+)\s+(?:([A-Za-z*+]+)\s+)?(?=[\w.-]+=)")
 
 
@@ -103,10 +112,13 @@ def terse_a_registros(texto: str) -> list[dict[str, str]]:
     """
     registros = []
     for linea in texto.splitlines():
-        pares = RE_KV.findall(linea)
-        if not pares:
+        claves = list(RE_CLAVE_TERSE.finditer(linea))
+        if not claves:
             continue
-        registro = {clave: valor.strip('"') for clave, valor in pares}
+        registro = {}
+        for actual, siguiente in zip(claves, claves[1:] + [None]):
+            fin = siguiente.start() if siguiente else len(linea)
+            registro[actual.group(1)] = linea[actual.end():fin].strip().strip('"')
         encabezado = RE_ENCABEZADO_TERSE.match(linea)
         if encabezado:
             registro["_id"] = encabezado.group(1)
@@ -292,8 +304,14 @@ def recolectar_estado(conn, device_type: str) -> dict:
     parsers = PARSERS[device_type]
     crudo = {clave: conn.send_command(cmd, read_timeout=30) for clave, cmd in comandos.items()}
 
+    hostname = parsers["identidad"](crudo["identidad"]).get("hostname", "")
+    if not hostname:
+        # Respaldo: un usuario de privilegio 1 en IOS no puede ver el running-config,
+        # pero el prompt ("R2>") siempre trae el nombre del equipo.
+        hostname = re.sub(r"^\[?[^@\]]*@|[\]>#\s]+$", "", conn.find_prompt().strip())
+
     return {
-        "hostname": parsers["identidad"](crudo["identidad"]).get("hostname", ""),
+        "hostname": hostname,
         "sistema": parsers["uptime"](crudo["uptime"]),
         "interfaces": parsers["interfaces"](crudo["interfaces"]),
         "ruta_default": parsers["ruta_default"](crudo["ruta_default"]),
@@ -340,7 +358,8 @@ def asegurar_loopback(conn, numero: int, autor: str) -> dict:
     10.253.0.N/32 y comentario. Una 2.ª ejecución no cambia nada.
     """
     interfaz, ip = nombres_objetos(numero)
-    comentario = f"Lab1 {autor} N={numero}"
+    # Sin "=" en el comentario: en 'print terse' se confundiría con otra clave
+    comentario = f"Lab1 - {autor} - lista {numero}"
     pasos: list[tuple[str, str, str]] = []
 
     # 1) Bridge
@@ -524,7 +543,10 @@ def procesar_equipo(equipo: dict, opciones: argparse.Namespace, estudiante: dict
                         conn, estudiante["numero"], estudiante["nombre"]
                     )
     except NetmikoTimeoutException as e:
-        resultado["estado"] = f"error: timeout de conexión ({str(e).splitlines()[0]})"
+        # Netmiko también usa esta excepción para fallos de SSH (ej. algoritmos
+        # incompatibles); se juntan las líneas para no perder la causa real.
+        detalle = " ".join(str(e).split()) or "sin detalle"
+        resultado["estado"] = f"error: no se pudo conectar ({detalle})"
     except NetmikoAuthenticationException:
         resultado["estado"] = "error: autenticación fallida (usuario o clave)"
     except Exception as e:  # noqa: BLE001 — R3 pide capturar el resto por equipo
