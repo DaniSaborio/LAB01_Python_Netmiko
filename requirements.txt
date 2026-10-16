@@ -1,7 +1,7 @@
-
-
-
 netmiko>=4.3
+# paramiko 4+ eliminó diffie-hellman-group1-sha1, el único KEX del Cisco 3725 (IOS 12.4)
+paramiko>=3.4,<4
 pyyaml>=6.0
 rich>=13.0
+python-dotenv>=1.0
 requests>=2.31

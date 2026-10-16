@@ -2,8 +2,8 @@
 # Claves: LAB_PASS_MT_LAB y LAB_PASS_CISCO_LAB (variables de entorno) o getpass.
 
 estudiante:
-  numero: 0            # <-- su número de lista N (1-254)
-  nombre: "Alejandro Cordero"
+  numero: 5
+  nombre: "Daniel Saborio"
 
 equipos:
   - nombre: mt-lab
