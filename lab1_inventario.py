@@ -10,6 +10,11 @@ Uso:
     python lab1_inventario.py --rest           # extra: compara SSH vs API REST
     python lab1_inventario.py -i otro.yaml -n 7
 
+Laboratorio local (LAB01 en GNS3, datos en la sección 'laboratorio' del YAML):
+    python lab1_inventario.py --preparar       # configuración inicial por consola
+    python lab1_inventario.py --rutas          # rutas estáticas LAN<->LAN + ping
+    python lab1_inventario.py --quitar-rutas   # elimina solo esas rutas
+
 Credenciales (R2): variable de entorno LAB_PASS_<NOMBRE> (mt-lab -> LAB_PASS_MT_LAB);
 si no existe, se piden con getpass. Nunca se guardan en código, YAML ni reporte.
 """
@@ -17,10 +22,13 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import ipaddress
 import json
 import os
 import re
+import socket
 import sys
+import time
 
 from datetime import datetime
 from pathlib import Path
@@ -280,7 +288,7 @@ def obtener_password(nombre_equipo: str) -> tuple[str, str]:
 # ─────────────────────────────────────────────────────────────────────────────
 # R3 — Conexión
 # ─────────────────────────────────────────────────────────────────────────────
-def parametros_netmiko(equipo: dict, password: str) -> dict:
+def parametros_netmiko(equipo: dict, password: str, sufijo_log: str = "") -> dict:
     """Arma el diccionario para ConnectHandler, con session_log por equipo."""
     LOGS_DIR.mkdir(exist_ok=True)
     return {
@@ -289,7 +297,7 @@ def parametros_netmiko(equipo: dict, password: str) -> dict:
         "username": equipo["usuario"],
         "password": password,
         "port": equipo.get("puerto", 22),
-        "session_log": str(LOGS_DIR / f"{equipo['nombre']}.log"),
+        "session_log": str(LOGS_DIR / f"{equipo['nombre']}{sufijo_log}.log"),
         "conn_timeout": equipo.get("timeout", 15),
         "auth_timeout": equipo.get("timeout", 15),
     }
@@ -502,6 +510,413 @@ def comparar_ssh_rest(ssh: dict, rest: dict) -> list[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Laboratorio local LAB01 (--preparar, --rutas, --quitar-rutas)
+#
+# Es infraestructura del laboratorio, aparte de R1–R6: no escribe
+# reporte_estado.json, y sus session_log van a logs/<equipo>-rutas.log para no
+# pisar los de R3. Todos los datos salen de la sección 'laboratorio' del YAML.
+# ─────────────────────────────────────────────────────────────────────────────
+ETIQUETA_RUTAS = "RUTAS-LAB"
+
+# Igual que COMANDOS: agregar un fabricante = agregar una entrada.
+#   existe -> cualquier ruta igual (no duplicar aunque la haya creado otro)
+#   propia -> solo la que lleva nuestra etiqueta (lo único que se borra)
+RUTAS: dict[str, dict[str, Any]] = {
+    "mikrotik_routeros": {
+        "existe": '/ip route print terse where dst-address="{red}" and gateway="{via}"',
+        "propia": '/ip route print terse where dst-address="{red}" and comment="{etiqueta}"',
+        "crear": '/ip route add dst-address={red} gateway={via} comment="{etiqueta}"',
+        "eliminar": '/ip route remove [find where dst-address="{red}" and comment="{etiqueta}"]',
+        "ping": "/ping {destino} src-address={origen_ip} count=3",
+        "modo_config": False,
+    },
+    "cisco_ios": {
+        "existe": "show running-config | include ^ip route {red_ip} {mascara} {via}",
+        "propia": "show running-config | include ^ip route {red_ip} {mascara} {via} name {etiqueta}",
+        "crear": "ip route {red_ip} {mascara} {via} name {etiqueta}",
+        "eliminar": "no ip route {red_ip} {mascara} {via}",
+        "ping": "ping {destino} source {origen_if} repeat 3",
+        "modo_config": True,  # IOS necesita 'configure terminal' (send_config_set)
+    },
+}
+RE_PING_OK = re.compile(r"received=[1-9]|Success rate is [1-9]")
+RE_ERROR_IOS = re.compile(r"^% ", re.MULTILINE)
+
+
+def describir_error(e: Exception) -> str:
+    return f"{type(e).__name__}: {' '.join(str(e).split())}"
+
+
+def routers_con_lan(equipos: list[dict]) -> list[dict]:
+    """Equipos que tienen una LAN propia (campo 'lan') y comandos de rutas."""
+    return [e for e in equipos if e.get("lan") and e["device_type"] in RUTAS]
+
+
+def rutas_hacia_otros(equipo: dict, routers: list[dict]) -> list[dict]:
+    """Una ruta por cada LAN de los otros routers, vía su IP en 10.60.30.0/24."""
+    propia = ipaddress.ip_interface(equipo["lan"])
+    rutas = []
+    for otro in routers:
+        if otro is equipo:
+            continue
+        lan = ipaddress.ip_interface(otro["lan"])
+        rutas.append({
+            "red": str(lan.network),
+            "red_ip": str(lan.network.network_address),
+            "mascara": str(lan.network.netmask),
+            "via": otro["host"],
+            "destino": str(lan.ip),          # gateway de la otra LAN, para el ping
+            "origen_ip": str(propia.ip),     # MikroTik: src-address
+            "origen_if": equipo["lan_interfaz"],  # Cisco: source <interfaz>
+            "etiqueta": ETIQUETA_RUTAS,
+        })
+    return rutas
+
+
+def ruta_consultar(conn, plantilla: str, datos: dict) -> bool:
+    """Consultar antes de actuar: True si el comando de lectura devuelve algo."""
+    salida = conn.send_command(plantilla.format(**datos), read_timeout=20)
+    if RE_ERROR_ROUTEROS.search(salida) or RE_ERROR_IOS.search(salida):
+        raise RuntimeError(f"el equipo rechazó la consulta: {salida.strip()}")
+    return bool(salida.strip())
+
+
+def ruta_aplicar(conn, comandos: dict, comando: str) -> None:
+    if comandos["modo_config"]:
+        salida = conn.send_config_set([comando])
+        if RE_ERROR_IOS.search(salida):
+            raise RuntimeError(f"IOS rechazó «{comando}»: {salida.strip()}")
+    else:
+        mt_ejecutar(conn, comando)
+
+
+def gestionar_rutas(equipos: list[dict], quitar: bool) -> int:
+    """
+    --rutas: cada router aprende la LAN de los demás (consultar antes de crear).
+    --quitar-rutas: borra solo las rutas con la etiqueta RUTAS-LAB.
+    Al aplicar, verifica con ping de LAN a LAN (necesita las rutas de ida y vuelta).
+    """
+    routers = routers_con_lan(equipos)
+    if len(routers) < 2:
+        console.print("[red]Se necesitan al menos 2 equipos con 'lan' en el inventario.[/]")
+        return 2
+
+    claves = {e["nombre"]: obtener_password(e["nombre"])[0] for e in routers}
+    cambios: list[list[str]] = []
+    for equipo in routers:
+        comandos = RUTAS[equipo["device_type"]]
+        try:
+            with ConnectHandler(**parametros_netmiko(equipo, claves[equipo["nombre"]], "-rutas")) as conn:
+                for ruta in rutas_hacia_otros(equipo, routers):
+                    if quitar:
+                        if ruta_consultar(conn, comandos["propia"], ruta):
+                            ruta_aplicar(conn, comandos, comandos["eliminar"].format(**ruta))
+                            accion = "eliminada"
+                        else:
+                            accion = "no existía"
+                    elif ruta_consultar(conn, comandos["existe"], ruta):
+                        accion = "sin cambios"
+                    else:
+                        ruta_aplicar(conn, comandos, comandos["crear"].format(**ruta))
+                        # Verificación con lectura posterior
+                        accion = ("creada" if ruta_consultar(conn, comandos["existe"], ruta)
+                                  else "error: no aparece después de crearla")
+                    cambios.append([equipo["nombre"], ruta["red"], ruta["via"], accion])
+        except Exception as e:  # noqa: BLE001 — igual que R3: se sigue con el resto
+            cambios.append([equipo["nombre"], "—", "—", f"error: {describir_error(e)}"])
+
+    pings: list[list[str]] = []
+    if not quitar:
+        for equipo in routers:
+            comandos = RUTAS[equipo["device_type"]]
+            try:
+                with ConnectHandler(**parametros_netmiko(equipo, claves[equipo["nombre"]], "-rutas")) as conn:
+                    for ruta in rutas_hacia_otros(equipo, routers):
+                        salida = conn.send_command(comandos["ping"].format(**ruta), read_timeout=30)
+                        ok = bool(RE_PING_OK.search(salida))
+                        pings.append([equipo["nombre"], ruta["origen_ip"], ruta["destino"],
+                                      "[green]✓ responde[/]" if ok else "[red]✗ sin respuesta[/]"])
+            except Exception as e:  # noqa: BLE001
+                pings.append([equipo["nombre"], "—", "—", f"[red]error: {describir_error(e)}[/]"])
+
+    mostrar_rutas(cambios, pings, quitar)
+    hubo_error = any(c[3].startswith("error") for c in cambios) or any("✓" not in p[3] for p in pings)
+    return 1 if hubo_error else 0
+
+
+def mostrar_rutas(cambios: list[list[str]], pings: list[list[str]], quitar: bool) -> None:
+    tabla = Table(title="Rutas estáticas entre LANs", box=box.ROUNDED, header_style="bold cyan")
+    for col in ("Router", "Red destino", "Vía", "Resultado"):
+        tabla.add_column(col)
+    for router, red, via, accion in cambios:
+        color = "red" if accion.startswith("error") else COLOR_PASO.get(accion, "white")
+        tabla.add_row(router, red, via, f"[{color}]{accion}[/]")
+    console.print(tabla)
+    if pings:
+        verif = Table(title="Verificación: ping LAN a LAN", box=box.ROUNDED, header_style="bold green")
+        for col in ("Router", "Origen", "Destino", "Resultado"):
+            verif.add_column(col)
+        for fila in pings:
+            verif.add_row(*fila)
+        console.print(verif)
+    elif not quitar:
+        console.print("[yellow]Sin verificación de ping.[/]")
+
+
+# ── Configuración inicial por consola (--preparar) ──────────────────────────
+ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b[=>]|\r")
+IAC = 255  # byte de comando telnet
+
+
+class Consola:
+    """Consola telnet de GNS3 (telnetlib ya no existe en Python 3.13+)."""
+
+    def __init__(self, puerto: int, host: str = "127.0.0.1"):
+        self.sock = socket.create_connection((host, puerto), timeout=10)
+        self.buffer = ""
+
+    @staticmethod
+    def _limpiar(datos: bytes) -> str:
+        """Quita la negociación telnet (IAC ...) y los códigos ANSI."""
+        salida = bytearray()
+        i = 0
+        while i < len(datos):
+            if datos[i] == IAC and i + 1 < len(datos):
+                comando = datos[i + 1]
+                if comando == 250:  # subnegociación: saltar hasta IAC SE
+                    fin = datos.find(bytes([IAC, 240]), i)
+                    i = len(datos) if fin < 0 else fin + 2
+                elif comando in (251, 252, 253, 254):
+                    i += 3
+                else:
+                    i += 2
+                continue
+            salida.append(datos[i])
+            i += 1
+        return ANSI.sub("", salida.decode(errors="ignore"))
+
+    def enviar(self, linea: str) -> None:
+        self.sock.sendall(linea.encode() + b"\r")
+
+    def esperar(self, patrones: list[str], timeout: float = 30) -> tuple[int, str]:
+        """Lee hasta que aparezca algún patrón. Devuelve (índice, texto leído)."""
+        regex = [re.compile(p, re.IGNORECASE | re.MULTILINE) for p in patrones]
+        limite = time.time() + timeout
+        while time.time() < limite:
+            for i, r in enumerate(regex):
+                m = r.search(self.buffer)
+                if m:
+                    texto, self.buffer = self.buffer[: m.end()], self.buffer[m.end():]
+                    return i, texto
+            self.sock.settimeout(max(0.1, min(1.0, limite - time.time())))
+            try:
+                datos = self.sock.recv(65535)
+            except socket.timeout:
+                continue
+            if not datos:
+                raise ConnectionError("la consola cerró la conexión")
+            self.buffer += self._limpiar(datos)
+        raise TimeoutError(f"no apareció {patrones} en {timeout}s: {self.buffer[-200:]!r}")
+
+    def comando(self, linea: str, prompt: list[str], timeout: float = 20) -> str:
+        self.enviar(linea)
+        return self.esperar(prompt, timeout)[1]
+
+    def cerrar(self) -> None:
+        self.sock.close()
+
+
+def puertos_consola(lab: dict) -> dict[str, int]:
+    """Puertos de consola por nombre de nodo, leídos del archivo .gns3."""
+    topologia = BASE_DIR / lab.get("topologia", "LAB01.gns3")
+    nodos = json.loads(topologia.read_text(encoding="utf-8"))["topology"]["nodes"]
+    return {n["name"]: n["console"] for n in nodos if n.get("console")}
+
+
+def ros_texto(valor: str) -> str:
+    """Escapa un valor para ponerlo entre comillas en RouterOS."""
+    return valor.replace("\\", "\\\\").replace('"', '\\"').replace("$", "\\$")
+
+
+def preparar_mikrotik(equipo: dict, puerto: int, lab: dict) -> None:
+    """CHR de fábrica -> IPs, ruta por defecto, usuario lab-ssh, SSH y REST (https)."""
+    password, _ = obtener_password(equipo["nombre"])
+    # Clave de admin: LAB_ADMIN_<NOMBRE>; si no existe, la misma de lab-ssh
+    variable_admin = nombre_variable_entorno(equipo["nombre"]).replace("LAB_PASS_", "LAB_ADMIN_")
+    admin = os.environ.get(variable_admin) or password
+    con = Consola(puerto)
+
+    patrones = [
+        r"Login:\s*$",                  # 0
+        r"^Password:\s*$",              # 1
+        r"license\?.*\[Y/n\]:?\s*$",    # 2
+        r"repeat new password>\s*$",    # 3
+        r"new password>\s*$",           # 4
+        r"\] >\s*$",                    # 5 prompt [admin@mt-lab] >
+        r"Login failed",                # 6
+    ]
+    claves_admin = ["", admin]  # primero sin clave (CHR de fábrica)
+    intento = 0
+    con.enviar("")
+    for _ in range(20):
+        i, _ = con.esperar(patrones, timeout=180)
+        if i == 0:
+            con.enviar("admin+ct")  # +ct: sin colores ni detección de terminal
+        elif i == 1:
+            if intento >= len(claves_admin):
+                raise RuntimeError(f"no se pudo entrar como admin (revise {variable_admin})")
+            con.enviar(claves_admin[intento])
+            intento += 1
+        elif i == 2:
+            con.enviar("n")
+        elif i in (3, 4):
+            con.enviar(admin)
+        elif i == 5:
+            break
+    else:
+        raise RuntimeError("no se pudo llegar al prompt del MikroTik")
+
+    uplink = f"{equipo['host']}/{lab.get('prefijo', 24)}"
+    pw = ros_texto(password)
+    comandos = [
+        f"/system identity set name={equipo['nombre']}",
+        f':if ([:len [/ip address find address="{uplink}"]] = 0) do={{'
+        f'/ip address add address={uplink} interface={equipo["uplink_interfaz"]} comment="LAB-LOCAL"}}',
+        f':if ([:len [/ip address find address="{equipo["lan"]}"]] = 0) do={{'
+        f'/ip address add address={equipo["lan"]} interface={equipo["lan_interfaz"]} comment="LAB-LOCAL LAN"}}',
+        f':if ([:len [/ip route find dst-address="0.0.0.0/0" gateway="{lab["gateway"]}"]] = 0) do={{'
+        f'/ip route add dst-address=0.0.0.0/0 gateway={lab["gateway"]} comment="LAB-LOCAL"}}',
+        "/ip service set ssh disabled=no port=22",
+        # REST en RouterOS 7.8 solo va por HTTPS (www-ssl): certificado autofirmado
+        f':if ([:len [/certificate find name="lab-rest"]] = 0) do={{'
+        f'/certificate add name=lab-rest common-name={equipo["host"]} days-valid=3650; '
+        f'/certificate sign lab-rest}}',
+        "/ip service set www-ssl certificate=lab-rest disabled=no port=443",
+        f':if ([:len [/user find name="{equipo["usuario"]}"]] = 0) do={{'
+        f'/user add name={equipo["usuario"]} group=full password="{pw}"}} '
+        f'else={{/user set [find name="{equipo["usuario"]}"] password="{pw}"}}',
+    ]
+    for comando in comandos:
+        salida = con.comando(comando, [r"\] >\s*$"], timeout=30)
+        if re.search(r"failure|syntax error|bad command|expected", salida, re.IGNORECASE):
+            raise RuntimeError(f"RouterOS rechazó: {comando}\n{salida}")
+    con.enviar("/quit")
+    con.cerrar()
+
+
+def preparar_cisco(equipo: dict, puerto: int, lab: dict) -> None:
+    """Router sin configuración -> IPs, ruta por defecto, usuario lab-ssh y SSH v2."""
+    password, _ = obtener_password(equipo["nombre"])
+    con = Consola(puerto)
+
+    # Llegar al modo privilegiado sin importar en qué estado esté el router
+    patrones = [
+        r"initial configuration dialog\?.*\[yes/no\]:",  # 0 router sin config
+        r"terminate autoinstall\? \[yes\]:",              # 1
+        r"Press RETURN to get started",                   # 2
+        r"^Username:\s*$",                                # 3
+        r"^Password:\s*$",                                # 4
+        r"^\S+>\s*$",                                     # 5
+        r"^\S+#\s*$",                                     # 6
+    ]
+    respuestas = {0: "no", 1: "yes", 2: "", 3: equipo["usuario"], 4: password, 5: "enable"}
+    con.enviar("")
+    for _ in range(20):
+        i, _ = con.esperar(patrones, timeout=240)  # el 3725 tarda en arrancar
+        if i == 6:
+            break
+        con.enviar(respuestas[i])
+    else:
+        raise RuntimeError("no se pudo llegar al modo privilegiado")
+
+    uplink = ipaddress.ip_interface(f"{equipo['host']}/{lab.get('prefijo', 24)}")
+    lan = ipaddress.ip_interface(equipo["lan"])
+    prompt = [r"^\S+[#>]\s*$"]
+    for linea in [
+        "terminal length 0",
+        "configure terminal",
+        f"hostname {equipo['nombre']}",
+        "no ip domain lookup",
+        "ip domain name lab.local",
+        f"username {equipo['usuario']} privilege 15 secret {password}",
+        f"interface {equipo['uplink_interfaz']}",
+        f" ip address {uplink.ip} {uplink.netmask}",
+        " no shutdown",
+        f"interface {equipo['lan_interfaz']}",
+        f" ip address {lan.ip} {lan.netmask}",
+        " no shutdown",
+        "exit",
+        f"ip route 0.0.0.0 0.0.0.0 {lab['gateway']}",
+        "line vty 0 4",
+        " login local",
+        " transport input ssh",
+        "exit",
+    ]:
+        con.comando(linea, prompt)
+
+    # Las llaves RSA solo se generan si no existen (si existen, IOS pregunta)
+    con.enviar("crypto key generate rsa general-keys modulus 1024")
+    i, _ = con.esperar([r"\[yes/no\]:", r"^\S+\(config\)#\s*$"], timeout=120)
+    if i == 0:
+        con.comando("no", prompt)
+    for linea in ("ip ssh version 2", "end", "write memory"):
+        con.comando(linea, prompt, timeout=60)
+    con.cerrar()
+
+
+def preparar_vpcs(pc: dict, puerto: int) -> None:
+    """IP estática en una VPCS ('save' la deja guardada en el proyecto)."""
+    con = Consola(puerto)
+    prompt = [r"\S+>\s*$"]
+    con.enviar("")
+    con.esperar(prompt, timeout=15)
+    con.comando(f"ip {pc['ip']} {pc['gateway']}", prompt, timeout=15)
+    con.comando("save", prompt, timeout=15)
+    con.cerrar()
+
+
+PREPARAR: dict[str, Callable[[dict, int, dict], None]] = {
+    "mikrotik_routeros": preparar_mikrotik,
+    "cisco_ios": preparar_cisco,
+}
+
+
+def preparar_laboratorio(inventario: dict) -> int:
+    """--preparar: deja LAB01 listo para entrar por SSH (se puede repetir)."""
+    lab = inventario.get("laboratorio") or {}
+    if not lab.get("gateway"):
+        console.print("[red]Falta la sección 'laboratorio' (con 'gateway') en el inventario.[/]")
+        return 2
+    puertos = puertos_consola(lab)
+    tareas: list[tuple[str, int | None, Callable[[], None]]] = []
+    for equipo in inventario["equipos"]:
+        funcion = PREPARAR.get(equipo["device_type"])
+        puerto = puertos.get(equipo.get("nodo_gns3", ""))
+        if funcion:
+            tareas.append((equipo["nombre"], puerto,
+                           lambda f=funcion, e=equipo, p=puerto: f(e, p, lab)))
+    for pc in lab.get("pcs", []):
+        puerto = puertos.get(pc["nombre"])
+        tareas.append((pc["nombre"], puerto, lambda pc=pc, p=puerto: preparar_vpcs(pc, p)))
+
+    errores = 0
+    for nombre, puerto, tarea in tareas:
+        if not puerto:
+            console.print(f"  [yellow]⚠ {nombre}: sin puerto de consola en la topología[/]")
+            errores += 1
+            continue
+        try:
+            with console.status(f"[bold cyan]{nombre}: configurando por consola :{puerto}…"):
+                tarea()
+            console.print(f"  [green]✓[/] {nombre} listo (consola :{puerto})")
+        except (OSError, RuntimeError) as e:
+            errores += 1
+            console.print(f"  [red]✗ {nombre}:[/] {describir_error(e)}  "
+                          "[dim](¿el nodo está encendido en GNS3?)[/]", highlight=False)
+    return 1 if errores else 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Orquestación por equipo (R3: un fallo no detiene a los demás)
 # ─────────────────────────────────────────────────────────────────────────────
 def nuevo_resultado(equipo: dict) -> dict:
@@ -597,6 +1012,9 @@ def mostrar_banner(opciones: argparse.Namespace, estudiante: dict, total: int) -
     modo = (
         "[red]LIMPIEZA[/]" if opciones.limpiar
         else "[cyan]SOLO ESTADO[/]" if opciones.solo_estado
+        else "[magenta]PREPARAR LAB01 (consola)[/]" if opciones.preparar
+        else "[magenta]RUTAS ENTRE LAN[/]" if opciones.rutas
+        else "[red]QUITAR RUTAS[/]" if opciones.quitar_rutas
         else "[green]ESTADO + CONFIGURACIÓN[/]"
     )
     titulo = Text("LAB 1 · INVENTARIO NETMIKO", style="bold white")
@@ -736,6 +1154,12 @@ def parsear_argumentos() -> argparse.Namespace:
     grupo = p.add_mutually_exclusive_group()
     grupo.add_argument("--limpiar", action="store_true", help="eliminar solo mis objetos")
     grupo.add_argument("--solo-estado", action="store_true", help="no modificar configuración")
+    grupo.add_argument("--preparar", action="store_true",
+                       help="LAB01 local: configuración inicial de routers y PCs por consola")
+    grupo.add_argument("--rutas", action="store_true",
+                       help="LAB01 local: rutas estáticas entre las LAN de PC1 y PC2 + ping")
+    grupo.add_argument("--quitar-rutas", action="store_true",
+                       help="LAB01 local: elimina solo las rutas creadas con --rutas")
     p.add_argument("--rest", action="store_true", help="extra: comparar con la API REST")
     return p.parse_args()
 
@@ -759,6 +1183,12 @@ def main() -> int:
 
     equipos = inventario["equipos"]
     mostrar_banner(opciones, estudiante, len(equipos))
+
+    # Modos del laboratorio local: no tocan R6 ni reporte_estado.json
+    if opciones.preparar:
+        return preparar_laboratorio(inventario)
+    if opciones.rutas or opciones.quitar_rutas:
+        return gestionar_rutas(equipos, quitar=opciones.quitar_rutas)
 
     resultados = []
     for i, equipo in enumerate(equipos, start=1):

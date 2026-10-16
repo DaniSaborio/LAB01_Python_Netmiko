@@ -5,15 +5,36 @@ estudiante:
   numero: 5
   nombre: "Daniel Saborio"
 
+# Laboratorio local en GNS3 (LAB01). Solo lo usan --preparar y --rutas.
+laboratorio:
+  topologia: LAB01.gns3      # de aquí se leen los puertos de consola
+  gateway: 10.60.30.1        # tap0 del host (laboratorio_local/preparar_host.sh)
+  prefijo: 24                # máscara de la red 10.60.30.0
+  pcs:                       # VPCS con IP estática
+    - nombre: PC1
+      ip: 172.16.10.11/24
+      gateway: 172.16.10.1
+    - nombre: PC2
+      ip: 172.16.20.100/24
+      gateway: 172.16.20.1
+
 equipos:
   - nombre: mt-lab
     host: 10.60.30.202
     device_type: mikrotik_routeros
     usuario: lab-ssh
     rol: escritura
+    nodo_gns3: MikroTikRB2011UiAS7.8-1
+    uplink_interfaz: ether1    # hacia Switch1 (10.60.30.0/24)
+    lan_interfaz: ether2       # hacia PC2
+    lan: 172.16.20.1/24
 
-  - nombre: cisco-lab          # extra multivendor (solo lectura)
+  - nombre: cisco-lab          # extra multivendor (solo lectura en R6)
     host: 10.60.30.203
     device_type: cisco_ios
     usuario: lab-ssh
     rol: lectura
+    nodo_gns3: R1
+    uplink_interfaz: FastEthernet0/0
+    lan_interfaz: FastEthernet0/1   # hacia PC1
+    lan: 172.16.10.1/24

@@ -24,7 +24,7 @@ Extras: Cisco IOS en el inventario (multivendor, solo lectura) y la comparación
 ├── reporte_estado.json    # salida de una ejecución
 ├── logs/                  # session_log de cada equipo
 ├── LAB01.gns3             # topología GNS3 local
-└── laboratorio_local/     # preparar_host.sh y preparar_equipos.py
+└── laboratorio_local/     # preparar_host.sh (IP del host en tap0, con sudo)
 ```
 
 ## Laboratorio local (GNS3, sin VPN)
@@ -43,12 +43,22 @@ Cloud1 enlaza Switch1 con la interfaz `tap0` del host. Al darle la IP `10.60.30.
    ```bash
    ./laboratorio_local/preparar_host.sh
    ```
-3. Solo la primera vez: configure los equipos por consola. Les pone IPs, el usuario `lab-ssh` con las claves del `.env`, SSH y la REST (https) del MikroTik:
+3. Solo la primera vez: configure los equipos por consola. Les pone IPs, el usuario `lab-ssh` con las claves del `.env`, SSH, la REST (https) del MikroTik y la IP estática de PC1 y PC2:
    ```bash
-   python laboratorio_local/preparar_equipos.py
+   python lab1_inventario.py --preparar
    ```
    La clave de `admin` del MikroTik se toma de `LAB_ADMIN_MT_LAB`; si no existe, se usa `LAB_PASS_MT_LAB`.
 4. Compruebe la conexión: `nc -zv 10.60.30.202 22 && nc -zv 10.60.30.203 22`.
+5. Para que PC1 y PC2 se hagan ping, agregue las rutas estáticas entre sus LAN:
+   ```bash
+   python lab1_inventario.py --rutas          # crea solo si falta y verifica con ping LAN a LAN
+   python lab1_inventario.py --quitar-rutas   # borra solo las rutas con comentario/nombre RUTAS-LAB
+   ```
+   Cada router aprende la LAN del otro: el MikroTik llega a `172.16.10.0/24` por `10.60.30.203`, y el Cisco a `172.16.20.0/24` por `10.60.30.202`. Sin esas rutas, los dos mandan ese tráfico al gateway `10.60.30.1` (el host), que no conoce las redes 172.16.x.
+
+Todos los datos de la topología (LAN, interfaces, PCs, nodos de GNS3) están en la sección `laboratorio` y en los campos `lan`, `lan_interfaz`, `uplink_interfaz` y `nodo_gns3` de cada equipo en `inventario.yaml`. `--preparar` y `--rutas` no modifican `reporte_estado.json`, y sus logs van a `logs/<equipo>-rutas.log`.
+
+`--rutas` también escribe en el Cisco aunque tenga `rol: lectura`: el rol aplica al cambio de R6, y las rutas son parte de montar el laboratorio local.
 
 ## Instalación
 
@@ -87,6 +97,8 @@ python lab1_inventario.py --solo-estado  # solo lectura, no toca la configuraci�
 python lab1_inventario.py --limpiar      # elimina solo lo-ssh-5 y su IP
 python lab1_inventario.py --rest         # extra: compara SSH vs. API REST
 python lab1_inventario.py -n 7           # usar otro número de lista
+python lab1_inventario.py --preparar     # LAB01: configuración inicial por consola
+python lab1_inventario.py --rutas        # LAB01: rutas entre LAN para ping PC1 <-> PC2
 ```
 
 Código de salida: `0` si todos los equipos respondieron, `1` si alguno falló, `2` si el inventario es inválido.
@@ -117,7 +129,7 @@ Usé Claude (Anthropic) como asistente para:
 - revisar la estructura del script y los parsers de `print terse`;
 - corregir casos borde (mensaje de timeout vacío, hostname del Cisco con un usuario de privilegio 1);
 - diagnosticar el parser de `print terse` (los comentarios con espacios rompían la idempotencia) y el KEX `diffie-hellman-group1-sha1` del Cisco 3725, que exige `paramiko<4`;
-- escribir los scripts de `laboratorio_local/` para montar LAB01 en GNS3 sin VPN;
+- escribir la configuración de LAB01 en GNS3 sin VPN (`--preparar`, `--rutas` y `preparar_host.sh`);
 - probar la idempotencia y `--limpiar` con un MikroTik simulado;
 - redactar este README.
 
