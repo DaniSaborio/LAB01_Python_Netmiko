@@ -25,8 +25,7 @@
 Press F1 for help
 
 [9999B
-[9999Boct/16/2026 06:10:46 system,error,critical login failure for user admin via local
-
+[9999B
 
 
 [9999B[lab-ssh@mt-lab] > 
@@ -58,20 +57,20 @@ Press F1 for help
 
 [lab-ssh@mt-lab] > /system resource print
 
-                   uptime: 26m59s
+                   uptime: 1m55s
                   version: 7.8 (stable)
                build-time: Feb/24/2023 09:03:00
          factory-software: 7.1
-              free-memory: 17.1MiB
+              free-memory: 18.6MiB
              total-memory: 96.0MiB
                       cpu: QEMU
                 cpu-count: 1
             cpu-frequency: 3293MHz
-                 cpu-load: 8%
-           free-hdd-space: 71.4MiB
+                 cpu-load: 9%
+           free-hdd-space: 71.3MiB
           total-hdd-space: 89.2MiB
-  write-sect-since-reboot: 3688
-         write-sect-total: 3688
+  write-sect-since-reboot: 552
+         write-sect-total: 552
         architecture-name: x86_64
                board-name: CHR
                  platform: MikroTik
@@ -111,7 +110,7 @@ Press F1 for help
 
 [lab-ssh@mt-lab] > /interface bridge print terse where name="lo-ssh-5"
 
-0 R comment=Lab1 - Daniel Saborio - lista 5 name=lo-ssh-5 mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled arp-timeout=auto mac-address=3E:B0:D9:58:6B:8C protocol-mode=none fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m vlan-filtering=no dhcp-snooping=no
+0 R comment=Lab1 - Daniel Saborio - lista 5 name=lo-ssh-5 mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled arp-timeout=auto mac-address=42:7C:C7:72:BA:37 protocol-mode=none fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m vlan-filtering=no dhcp-snooping=no
 
 
 
@@ -135,7 +134,7 @@ Press F1 for help
 
 [lab-ssh@mt-lab] > /interface bridge print terse where name="lo-ssh-5"
 
-0 R comment=Lab1 - Daniel Saborio - lista 5 name=lo-ssh-5 mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled arp-timeout=auto mac-address=3E:B0:D9:58:6B:8C protocol-mode=none fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m vlan-filtering=no dhcp-snooping=no
+0 R comment=Lab1 - Daniel Saborio - lista 5 name=lo-ssh-5 mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled arp-timeout=auto mac-address=42:7C:C7:72:BA:37 protocol-mode=none fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m vlan-filtering=no dhcp-snooping=no
 
 
 

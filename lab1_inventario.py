@@ -242,7 +242,6 @@ PARSERS: dict[str, dict[str, Callable[[str], Any]]] = {
 # R1 — Inventario
 # ─────────────────────────────────────────────────────────────────────────────
 def cargar_inventario(ruta: Path) -> dict:
-    """Lee y valida inventario.yaml. Falla si falta un campo o si hay claves."""
     if not ruta.exists():
         raise FileNotFoundError(f"No existe el inventario: {ruta}")
 

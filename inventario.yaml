@@ -24,7 +24,7 @@ equipos:
     device_type: mikrotik_routeros
     usuario: lab-ssh
     rol: escritura
-    nodo_gns3: MikroTikRB2011UiAS7.8-1
+    nodo_gns3: mt-lab
     uplink_interfaz: ether1    # hacia Switch1 (10.60.30.0/24)
     lan_interfaz: ether2       # hacia PC2
     lan: 172.16.20.1/24
@@ -34,7 +34,7 @@ equipos:
     device_type: cisco_ios
     usuario: lab-ssh
     rol: lectura
-    nodo_gns3: R1
+    nodo_gns3: cisco-lab
     uplink_interfaz: FastEthernet0/0
     lan_interfaz: FastEthernet0/1   # hacia PC1
     lan: 172.16.10.1/24
